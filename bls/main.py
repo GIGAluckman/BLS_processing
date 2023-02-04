@@ -1,4 +1,4 @@
-from raw_func import BLSfile_raw
+from bls.raw_func import BLSfile_raw
 import numpy as np
 
 class BLSfile(BLSfile_raw):
