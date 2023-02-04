@@ -2,6 +2,25 @@ from bls.raw_func import BLSfile_raw
 import numpy as np
 
 class BLSfile(BLSfile_raw):
+    """
+    Main object for BLS data processing
+    
+    Parameters
+    ----------
+    filemask : str
+        Insert the filename to process with .h5 extension
+        
+    Methods
+    ----------
+    rf_sweep(freq_range='Choose')
+        BLS RF-sweep data processing
+        
+    linescan(length, freq_range='Choose')
+        BLS linescan measurement processing
+        
+    map_2D(length_1, length_2, freq_range='Choose')
+        BLS 2D spatial scan measurement processing
+    """
     def __init__(self, filemask):
         super().__init__(filemask)
         
