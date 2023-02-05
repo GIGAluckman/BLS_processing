@@ -45,7 +45,19 @@ class BLSfile_raw():
                     if int_data[0] == b'steps': scan_steps = int(int_data[1])
 
         return scan_steps
-            
+    
+    def current(self):
+        
+        for index,row in enumerate(self.file['scan_definition'].keys()):
+            tvar = self.file['scan_definition'][row][1,1]
+            if tvar == b'Current (A)':
+                for int_data in list(self.file['scan_definition'][row]):
+                    if int_data[0] == b'start': current_start = float(int_data[1])
+                    if int_data[0] == b'stop': current_stop = float(int_data[1])
+                    if int_data[0] == b'steps': current_steps = int(int_data[1])
+        
+        current_array = np.linspace(current_start, current_stop, current_steps)
+        return current_array    
         
     def choose_freq_range(self, data, int_freq_range):
         
