@@ -1,7 +1,11 @@
 from bls.raw_func import BLSfile_raw
 import numpy as np
+import logging
+
+logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO, datefmt='%H:%M:%S')
 
 class BLSfile(BLSfile_raw):
+    
     """
     Main object for BLS data processing
     
@@ -21,6 +25,7 @@ class BLSfile(BLSfile_raw):
     map_2D(length_1, length_2, freq_range='Choose')
         BLS 2D spatial scan measurement processing
     """
+    
     def __init__(self, filemask):
         super().__init__(filemask)
         
@@ -58,12 +63,20 @@ class BLSfile(BLSfile_raw):
         freq_array = self.frequency()
         num_int_freq_points = main_data.shape[1]
         
+        logging.info(f'RF data array acquired, shape {freq_array.shape}')
+        
         if freq_range == 'All':
             
             int_freq_array = np.linspace(int_freq_lim[0], int_freq_lim[1], num_int_freq_points)
             rep_num = self.rep_check()
             if rep_num:
                 main_data = np.stack(np.split(main_data, rep_num))
+                logging.info(f'Detected {rep_num} repetitions, added as a first dim to BLS data')
+                
+            logging.info(f'BLS data returned, shape {main_data.shape}')
+            logging.info(f'BLS scan frequencies data returned, shape {int_freq_array.shape}')
+            logging.info('RF sweep is finished successfully')
+                
             return main_data, freq_array, int_freq_array
         
         if freq_range == 'Choose':
@@ -74,6 +87,12 @@ class BLSfile(BLSfile_raw):
             rep_num = self.rep_check()
             if rep_num:
                 main_data = np.stack(np.split(main_data, rep_num))
+                logging.info(f'Detected {rep_num} repetitions, added as a first dim to BLS data')
+                
+            logging.info(f'BLS data returned, shape {main_data.shape}')
+            logging.info(f'BLS scan frequencies boundaries returned, {int_freqlist}')
+            logging.info('RF sweep is finished successfully')
+                
             return main_data, freq_array, int_freqlist
         
         if isinstance(freq_range, list):
@@ -85,6 +104,11 @@ class BLSfile(BLSfile_raw):
             main_data = np.sum(main_data, axis=1)
             if rep_num:
                 main_data = np.stack(np.split(main_data, rep_num))
+                logging.info(f'Detected {rep_num} repetitions, added as a first dim to BLS data')
+                
+            logging.info(f'BLS data returned, shape {main_data.shape}')
+            logging.info('RF sweep is finished successfully')
+            
             return main_data, freq_array, None
         
     def linescan(self, length, freq_range='Choose'):
@@ -120,16 +144,28 @@ class BLSfile(BLSfile_raw):
         scan_array = np.linspace(0, 1, scan_steps) * length
         num_int_freq_points = main_data.shape[1]
         
+        logging.info(f'Scan dimension data acquired, shape {scan_array.shape}')
+        
         if freq_range == 'All':
             
             int_freq_array = np.linspace(int_freq_lim[0], int_freq_lim[1], num_int_freq_points)
-            return np.array(main_data).T, scan_array, int_freq_array
+            
+            logging.info(f'BLS data returned, shape {main_data.T.shape}')
+            logging.info(f'BLS scan frequencies data returned, shape {int_freq_array.shape}')
+            logging.info('Linescan is finished successfully')
+            
+            return main_data.T, scan_array, int_freq_array
         
         if freq_range == 'Choose':
             
             int_rangelist, int_freqlist = self.choose_freq_range(main_data, [int_freq_lim[0], int_freq_lim[1]])
             main_data = main_data[:,int_rangelist[0]:int_rangelist[1]]
             main_data = np.sum(main_data, axis=1)
+            
+            logging.info(f'BLS data returned, shape {main_data.shape}')
+            logging.info(f'BLS scan frequencies boundaries returned, {int_freqlist}')
+            logging.info('Linescan is finished successfully')
+            
             return main_data, scan_array, int_freqlist
         
         if isinstance(freq_range, list):
@@ -139,6 +175,10 @@ class BLSfile(BLSfile_raw):
             right_index = np.where(int_freq_array == freq_range[1])[0][0]
             main_data = main_data[:,left_index:right_index]
             main_data = np.sum(main_data, axis=1)
+            
+            logging.info(f'BLS data returned, shape {main_data.shape}')
+            logging.info('Linescan is finished successfully')
+            
             return main_data, scan_array, None
         
     def map_2D(self, length_1, length_2, freq_range='Choose'):
@@ -181,11 +221,18 @@ class BLSfile(BLSfile_raw):
         scan_array_2 = np.linspace(0, 1, scan_steps_2) * length_2
         num_int_freq_points = main_data.shape[1]
         
+        logging.info(f'Scan dimensions data acquired, shapes {scan_array_1.shape} and {scan_array_2.shape}')
+        
         if freq_range == 'Choose':
             
             int_rangelist, int_freqlist = self.choose_freq_range(main_data, [int_freq_lim[0], int_freq_lim[1]])
             main_data = main_data[:,int_rangelist[0]:int_rangelist[1]]
             main_data = np.sum(main_data, axis=1).reshape(scan_steps_1, scan_steps_2)
+            
+            logging.info(f'BLS data returned, shape {main_data.shape}')
+            logging.info(f'BLS scan frequencies boundaries returned, {int_freqlist}')
+            logging.info('Map 2D is finished successfully')
+            
             return main_data, scan_array_1, scan_array_2, int_freqlist
         
         if isinstance(freq_range, list):
@@ -195,5 +242,25 @@ class BLSfile(BLSfile_raw):
             right_index = np.where(int_freq_array == freq_range[1])[0][0]
             main_data = main_data[:,left_index:right_index]
             main_data = np.sum(main_data, axis=1).reshape(scan_steps_1, scan_steps_2)
-            return main_data, scan_array_1, scan_array_2
             
+            logging.info(f'BLS data returned, shape {main_data.shape}')
+            logging.info('Map 2D is finished successfully')
+            
+            return main_data, scan_array_1, scan_array_2
+        
+    def fieldsweep(self, freq_range='All'):
+        
+        main_data, int_freq_lim = self.acquire_spectrum()
+        current_array = self.current()
+        num_int_freq_points = main_data.shape[1]
+        
+        if freq_range == 'All':
+            
+            int_freq_array = np.linspace(int_freq_lim[0], int_freq_lim[1], num_int_freq_points)
+            
+            logging.info(f'BLS data returned, shape {main_data.T.shape}')
+            logging.info(f'Current sweep data returned, shape {current_array.shape}')
+            logging.info(f'BLS scan frequencies data returned, shape {int_freq_array.shape}')
+            logging.info('Fieldsweep is finished successfully')
+            
+            return main_data.T, current_array, int_freq_array
