@@ -2,10 +2,14 @@ import h5py
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.widgets import RangeSlider, Slider
+import logging
+
+logging.basicConfig(format='%(asctime)s - %(message)s', level=logging.INFO, datefmt='%H:%M:%S')
 
 class BLSfile_raw():
     def __init__(self, filemask):
         self.file = h5py.File(filemask, 'r')
+        logging.info('File has been read successfully')
         
     def acquire_spectrum(self):
         
