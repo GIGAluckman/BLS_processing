@@ -13,6 +13,5 @@ setup(
         'numpy',
         'matplotlib',
         'h5py',
-        'logging',
         ],
 )
